@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Currently Playing Song</title>
+    <script src="https://cdn.jsdelivr.net/npm/granim/dist/granim.min.js"></script>
+    <style>
+        body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Ensure gradient covers entire background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+    /* Add background gradient */
+    background: linear-gradient(to bottom right, #ff9966, #ff5e62, #00F260, #0575E6, #e1eec3, #f05053);
+    color: #fff; /* Change default text color to white */
+    font-family: 'Roboto Slab', serif; /* Specify font family */
+}
+
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1; /* Ensure gradient is behind other content */
+    width: 100vw;
+    height: 100vh;
+}
+
+#song-info {
+    text-align: center;
+}
+
+h1 {
+    font-size: 36px; /* Increase font size */
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Add text shadow for contrast */
+}
+
+p {
+    font-size: 24px; /* Increase font size */
+    margin-bottom: 10px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Add text shadow for contrast */
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+    </style>
+</head>
+<body>
+    <canvas id="gradient-canvas"></canvas>
+
+    <div id="song-info">
+        <h1>Currently Playing Song</h1>
+        <div id="song-details"></div>
+    </div>
+
+    <script>
+        var granimInstance = new Granim({
+            element: '#gradient-canvas',
+            direction: 'diagonal',
+            states: {
+                "default-state": {
+                    gradients: [
+                        ['#ff9966', '#ff5e62'],
+                        ['#00F260', '#0575E6'],
+                        ['#e1eec3', '#f05053']
+                    ],
+                    transitionSpeed: 3000, // Duration of the animation between gradients (in milliseconds)
+                    loop: true // Whether the animation should loop
+                }
+            }
+        });
+
+        // Function to fetch data from Python server
+        function fetchSongInfo() {
+            fetch('/current-song')
+                .then(response => response.json())
+                .then(data => {
+                    const artistName = data.artist_name;
+                    const trackName = data.track_name;
+                    const albumName = data.album_name;
+                    const albumCover = data.album_cover;
+
+                    // Update the webpage with song information
+                    document.getElementById('song-details').innerHTML = `
+                        <p>Artist: ${artistName}</p>
+                        <p>Track: ${trackName}</p>
+                        <p>Album: ${albumName}</p>
+                        <img src="${albumCover}" alt="Album Cover">
+                    `;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // Call the fetchSongInfo function initially
+        fetchSongInfo();
+
+        // Refresh song info every 10 seconds
+        setInterval(fetchSongInfo, 10000); // 10 seconds in milliseconds
+    </script>
+</body>
+</html>
